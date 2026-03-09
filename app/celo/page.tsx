@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useLanguage } from "@/contexts/language-context"
-
-// Mark this page as dynamic to allow context usage
-export const dynamic = "force-dynamic"
 import { Globe, ArrowLeft, ExternalLink, ChevronRight, Copy, Check } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import Footer from "@/components/footer"
+
+// Mark this page as dynamic to allow context usage
+export const dynamic = "force-dynamic"
 
 const tableOfContents = [
   { id: "mcp", title: "MCP Protocol", titleEs: "Protocolo MCP" },
