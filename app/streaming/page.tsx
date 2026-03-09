@@ -2,6 +2,9 @@
 
 import { MessageCircle } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
+
+// Mark this page as dynamic to allow context usage
+export const dynamic = "force-dynamic"
 import Navbar from "@/components/navbar"
 import ScrollFadeWrapper from "@/components/scroll-fade-wrapper"
 import { Button } from "@/components/ui/button"
