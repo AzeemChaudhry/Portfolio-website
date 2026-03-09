@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { AlertCircle, CheckCircle, Lock } from 'lucide-react'
+import { useAdmin } from '@/hooks/useAdmin'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const { isAuthenticated, isLoading: authLoading, setAuthToken } = useAdmin()
   const [isFirstTime, setIsFirstTime] = useState(true)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -15,6 +17,13 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.push('/admin')
+    }
+  }, [isAuthenticated, authLoading, router])
 
   const handleFirstTimeSetup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,15 +99,26 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Store token in localStorage
-      localStorage.setItem('adminToken', data.token)
+      // Store token and update auth state
+      setAuthToken(data.token)
       setLoginPassword('')
-      router.push('/admin/inquiries')
+      router.push('/admin')
     } catch (err) {
       setError('An error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -1,39 +1,43 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAdmin } from "@/hooks/useAdmin"
 import { Card } from "@/components/ui/card"
 import { Search, Filter, Eye, Trash2, CheckCircle, Clock, TrendingUp } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 interface ProjectInquiry {
   id: string
   client_name: string
   client_email: string
-  company_name: string | null
+  client_company: string | null
   project_title: string
   project_description: string
-  timeline: string
-  budget: string
-  industry: string | null
+  timeline_months: number | null
+  budget_range: string | null
+  project_type: string | null
   complexity_score: number
-  match_percentage: number
-  status: "new" | "reviewed" | "interested" | "not-fit" | "completed"
+  ai_fit_score: number | null
+  status: "new" | "viewed" | "interested" | "negotiating" | "completed" | "rejected"
   created_at: string
   admin_notes: string | null
+  priority: "low" | "medium" | "high" | "critical"
 }
 
 export default function AdminInquiriesPage() {
+  const { isAuthenticated, isLoading: authLoading } = useAdmin()
   const [inquiries, setInquiries] = useState<ProjectInquiry[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<"all" | "new" | "reviewed" | "interested">("all")
+  const [filter, setFilter] = useState<"all" | "new" | "viewed" | "interested">("all")
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedInquiry, setSelectedInquiry] = useState<ProjectInquiry | null>(null)
   const [adminNote, setAdminNote] = useState("")
+
+  // Auth check - if not authenticated, the layout will redirect
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      return // Layout will handle redirect
+    }
+  }, [isAuthenticated, authLoading])
 
   useEffect(() => {
     fetchInquiries()
@@ -41,12 +45,21 @@ export default function AdminInquiriesPage() {
 
   const fetchInquiries = async () => {
     try {
-      const { data, error } = await supabase
-        .from("project_inquiries")
-        .select("*")
-        .order("created_at", { ascending: false })
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch("/api/admin/inquiries", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to fetch inquiries")
+      }
+
+      const data = await res.json()
       setInquiries(data || [])
     } catch (error) {
       console.error("[v0] Error fetching inquiries:", error)
@@ -57,12 +70,20 @@ export default function AdminInquiriesPage() {
 
   const updateStatus = async (id: string, newStatus: ProjectInquiry["status"]) => {
     try {
-      const { error } = await supabase
-        .from("project_inquiries")
-        .update({ status: newStatus })
-        .eq("id", id)
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to update status")
+      }
 
       setInquiries(prev =>
         prev.map(inq => (inq.id === id ? { ...inq, status: newStatus } : inq))
@@ -77,12 +98,20 @@ export default function AdminInquiriesPage() {
 
   const addAdminNote = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("project_inquiries")
-        .update({ admin_notes: adminNote })
-        .eq("id", id)
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ admin_notes: adminNote }),
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to add note")
+      }
 
       setInquiries(prev =>
         prev.map(inq => (inq.id === id ? { ...inq, admin_notes: adminNote } : inq))
@@ -100,12 +129,19 @@ export default function AdminInquiriesPage() {
     if (!confirm("Are you sure you want to delete this inquiry?")) return
 
     try {
-      const { error } = await supabase
-        .from("project_inquiries")
-        .delete()
-        .eq("id", id)
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to delete inquiry")
+      }
 
       setInquiries(prev => prev.filter(inq => inq.id !== id))
       if (selectedInquiry?.id === id) {
@@ -138,11 +174,13 @@ export default function AdminInquiriesPage() {
     switch (status) {
       case "new":
         return "bg-blue-100 text-blue-800 border-blue-300"
-      case "reviewed":
+      case "viewed":
         return "bg-yellow-100 text-yellow-800 border-yellow-300"
       case "interested":
         return "bg-green-100 text-green-800 border-green-300"
-      case "not-fit":
+      case "negotiating":
+        return "bg-purple-100 text-purple-800 border-purple-300"
+      case "rejected":
         return "bg-red-100 text-red-800 border-red-300"
       case "completed":
         return "bg-gray-100 text-gray-800 border-gray-300"
@@ -242,8 +280,8 @@ export default function AdminInquiriesPage() {
                   className="w-full pl-10 pr-4 py-2 rounded-lg border border-border/50 bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50"
                 />
               </div>
-              <div className="flex gap-2">
-                {(["all", "new", "reviewed", "interested"] as const).map(status => (
+              <div className="flex gap-2 flex-wrap">
+                {(["all", "new", "viewed", "interested"] as const).map(status => (
                   <button
                     key={status}
                     onClick={() => setFilter(status)}
@@ -362,7 +400,7 @@ export default function AdminInquiriesPage() {
                 <div className="space-y-2 mb-4 border-t border-border/50 pt-4">
                   <p className="text-xs text-muted-foreground uppercase font-semibold">Update Status</p>
                   <div className="space-y-2">
-                    {(["reviewed", "interested", "not-fit"] as const).map(status => (
+                    {(["viewed", "interested", "negotiating", "rejected", "completed"] as const).map(status => (
                       <button
                         key={status}
                         onClick={() => updateStatus(selectedInquiry.id, status)}

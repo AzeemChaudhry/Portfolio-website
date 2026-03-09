@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
+import { ProtectedAdminLayout } from "@/components/admin-layout"
 
 export const metadata: Metadata = {
-  title: "Admin - Project Inquiries",
-  description: "Manage incoming AI project proposals"
+  title: "Admin Dashboard",
+  description: "Manage incoming AI project proposals and inquiries"
 }
 
 export default function AdminLayout({
@@ -11,8 +12,8 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <div>
+    <ProtectedAdminLayout>
       {children}
-    </div>
+    </ProtectedAdminLayout>
   )
 }
