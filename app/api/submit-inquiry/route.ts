@@ -6,6 +6,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Convert timeline string to months
+function parseTimelineToMonths(timeline: string): number {
+  const timelineMap: { [key: string]: number } = {
+    "Immediate": 0,
+    "1-3 months": 2,
+    "3-6 months": 4,
+    "6-12 months": 9,
+    "12+ months": 18
+  }
+  return timelineMap[timeline] || 3
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -20,7 +32,7 @@ export async function POST(request: NextRequest) {
       budget,
       industry,
       complexity_score,
-      match_percentage,
+      ai_fit_score,
       status
     } = body
 
@@ -39,16 +51,17 @@ export async function POST(request: NextRequest) {
         {
           client_name: name,
           client_email: email,
-          company_name: company || null,
+          client_company: company || null,
           project_title: projectTitle,
           project_description: projectDescription,
-          timeline,
-          budget,
+          timeline_months: parseTimelineToMonths(timeline),
+          budget_range: budget,
+          project_type: null,
           industry: industry || null,
-          complexity_score,
-          match_percentage,
-          status,
-          created_at: new Date().toISOString()
+          complexity_score: Math.min(100, Math.max(0, complexity_score || 0)),
+          ai_fit_score: Math.min(100, Math.max(0, ai_fit_score || 0)),
+          status: status || "new",
+          priority: complexity_score >= 70 ? "high" : complexity_score >= 40 ? "medium" : "low"
         }
       ])
       .select()

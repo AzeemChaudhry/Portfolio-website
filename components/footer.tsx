@@ -1,6 +1,7 @@
 "use client"
 
-import { Mail, Github, Linkedin } from "lucide-react"
+import { Mail, Github, Linkedin, Lock } from "lucide-react"
+import Link from "next/link"
 
 export default function Footer() {
   const scrollToSection = (sectionId: string) => {
@@ -88,11 +89,21 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="flex justify-center items-center pt-8 border-t border-border/50">
+        {/* Copyright & Admin Link */}
+        <div className="flex justify-center items-center pt-8 border-t border-border/50 flex-col gap-4">
           <p className="text-muted-foreground text-sm">
             © {new Date().getFullYear()} Muhammad Azeem Chaudhry. All rights reserved.
           </p>
+          
+          {/* Hidden Admin Portal Link */}
+          <Link
+            href="/admin/login"
+            className="text-xs text-muted-foreground hover:text-muted-foreground/70 transition-colors opacity-50 hover:opacity-100 flex items-center gap-1"
+            title="Admin Portal"
+          >
+            <Lock size={12} />
+            <span>Admin</span>
+          </Link>
         </div>
       </div>
     </footer>

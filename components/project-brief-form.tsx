@@ -78,9 +78,16 @@ export default function ProjectBriefForm() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          ...formData,
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          projectTitle: formData.projectTitle,
+          projectDescription: formData.projectDescription,
+          timeline: formData.timeline,
+          budget: formData.budget,
+          industry: formData.industry,
           complexity_score: complexity,
-          match_percentage: match,
+          ai_fit_score: match,
           status: "new"
         })
       })
