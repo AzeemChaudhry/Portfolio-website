@@ -7,9 +7,6 @@ import Link from "next/link"
 import Image from "next/image"
 import Footer from "@/components/footer"
 
-// Mark this page as dynamic to allow context usage
-export const dynamic = "force-dynamic"
-
 const tableOfContents = [
   { id: "mcp", title: "MCP Protocol", titleEs: "Protocolo MCP" },
   { id: "vibe-coding", title: "Vibe Coding on Celo", titleEs: "Vibe Coding en Celo" },

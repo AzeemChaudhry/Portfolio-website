@@ -1,15 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
 import { Card } from '@/components/ui/card'
 import { BarChart3, Mail, AlertCircle, TrendingUp, Calendar, DollarSign } from 'lucide-react'
 import Link from 'next/link'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 interface InquirySummary {
   total: number
@@ -38,32 +32,25 @@ export default function AdminDashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const { data, error: fetchError } = await supabase
-        .from('project_inquiries')
-        .select('status, complexity_score, created_at')
+      const token = localStorage.getItem('adminToken')
+      
+      const res = await fetch('/api/admin/stats', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
 
-      if (fetchError) throw fetchError
-
-      if (data) {
-        const now = new Date()
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        
-        const summary = {
-          total: data.length,
-          new: data.filter((i: any) => i.status === 'new').length,
-          interested: data.filter((i: any) => i.status === 'interested').length,
-          completed: data.filter((i: any) => i.status === 'completed').length,
-          avgComplexity: Math.round(
-            data.reduce((sum: number, i: any) => sum + (i.complexity_score || 0), 0) / 
-            (data.length || 1)
-          ),
-          recentCount: data.filter((i: any) => 
-            new Date(i.created_at) > sevenDaysAgo
-          ).length,
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Unauthorized')
         }
-        
-        setStats(summary)
+        throw new Error('Failed to fetch stats')
       }
+
+      const summary = await res.json()
+      setStats(summary)
     } catch (err) {
       console.error('[v0] Error fetching stats:', err)
       setError('Failed to load dashboard statistics')

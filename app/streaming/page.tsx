@@ -7,9 +7,6 @@ import ScrollFadeWrapper from "@/components/scroll-fade-wrapper"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
-// Mark this page as dynamic to allow context usage
-export const dynamic = "force-dynamic"
-
 export default function StreamingPage() {
   const { t } = useLanguage()
 

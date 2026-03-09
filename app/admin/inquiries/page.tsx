@@ -4,14 +4,6 @@ import { useState, useEffect } from "react"
 import { useAdmin } from "@/hooks/useAdmin"
 import { Card } from "@/components/ui/card"
 import { Search, Filter, Eye, Trash2, CheckCircle, Clock, TrendingUp } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-
-// Use service role key for server-side operations
-// Client requests will be intercepted at the API level
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 interface ProjectInquiry {
   id: string
@@ -53,12 +45,21 @@ export default function AdminInquiriesPage() {
 
   const fetchInquiries = async () => {
     try {
-      const { data, error } = await supabase
-        .from("project_inquiries")
-        .select("*")
-        .order("created_at", { ascending: false })
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch("/api/admin/inquiries", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to fetch inquiries")
+      }
+
+      const data = await res.json()
       setInquiries(data || [])
     } catch (error) {
       console.error("[v0] Error fetching inquiries:", error)
@@ -69,12 +70,20 @@ export default function AdminInquiriesPage() {
 
   const updateStatus = async (id: string, newStatus: ProjectInquiry["status"]) => {
     try {
-      const { error } = await supabase
-        .from("project_inquiries")
-        .update({ status: newStatus })
-        .eq("id", id)
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to update status")
+      }
 
       setInquiries(prev =>
         prev.map(inq => (inq.id === id ? { ...inq, status: newStatus } : inq))
@@ -89,12 +98,20 @@ export default function AdminInquiriesPage() {
 
   const addAdminNote = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from("project_inquiries")
-        .update({ admin_notes: adminNote })
-        .eq("id", id)
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ admin_notes: adminNote }),
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to add note")
+      }
 
       setInquiries(prev =>
         prev.map(inq => (inq.id === id ? { ...inq, admin_notes: adminNote } : inq))
@@ -112,12 +129,19 @@ export default function AdminInquiriesPage() {
     if (!confirm("Are you sure you want to delete this inquiry?")) return
 
     try {
-      const { error } = await supabase
-        .from("project_inquiries")
-        .delete()
-        .eq("id", id)
+      const token = localStorage.getItem("adminToken")
+      
+      const res = await fetch(`/api/admin/inquiries/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
 
-      if (error) throw error
+      if (!res.ok) {
+        throw new Error("Failed to delete inquiry")
+      }
 
       setInquiries(prev => prev.filter(inq => inq.id !== id))
       if (selectedInquiry?.id === id) {
