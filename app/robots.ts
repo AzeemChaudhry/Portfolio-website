@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/admin/"],
     },
-    sitemap: "https://arturogrande.com/sitemap.xml",
+    sitemap: "https://muhammadazeem.com/sitemap.xml",
   }
 }
