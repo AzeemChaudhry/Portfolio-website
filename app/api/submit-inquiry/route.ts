@@ -1,7 +1,9 @@
 import { createClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
 
-const supabase = createClient(
+// Created on first request so builds don't need Supabase credentials.
+const getSupabase = () =>
+  createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into Supabase
-    const { data, error } = await supabase
+    const { data, error } = await getSupabase()
       .from("project_inquiries")
       .insert([
         {

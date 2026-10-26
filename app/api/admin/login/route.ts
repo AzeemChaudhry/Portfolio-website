@@ -2,7 +2,9 @@ import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 
-const supabase = createClient(
+// Created on first request so builds don't need Supabase credentials.
+const getSupabase = () =>
+  createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -23,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     // Fetch admin credentials
-    const { data, error: fetchError } = await supabase
+    const { data, error: fetchError } = await getSupabase()
       .from('admin_credentials')
       .select('*')
       .eq('id', '00000000-0000-0000-0000-000000000001')
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     // Update last login
-    await supabase
+    await getSupabase()
       .from('admin_credentials')
       .update({ last_login: new Date().toISOString() })
       .eq('id', '00000000-0000-0000-0000-000000000001')

@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
 
-const supabase = createClient(
+// Created on first request so builds don't need Supabase credentials.
+const getSupabase = () =>
+  createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
     const passwordHash = hashPassword(password)
 
     // Update the admin credentials
-    const { error } = await supabase
+    const { error } = await getSupabase()
       .from('admin_credentials')
       .update({
         password_hash: passwordHash,
