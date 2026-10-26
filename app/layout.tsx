@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter_Tight, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
-import { Providers } from "@/components/providers"
 
 const sans = Inter_Tight({
   subsets: ["latin"],
@@ -62,14 +61,6 @@ export const metadata: Metadata = {
     siteName: "Muhammad Azeem Chaudhry",
     title: "Muhammad Azeem Chaudhry, AI Engineer",
     description,
-    images: [
-      {
-        url: "/images/profile.jpg",
-        width: 400,
-        height: 400,
-        alt: "Muhammad Azeem - AI Engineer",
-      },
-    ],
   },
   twitter: {
     card: "summary",
@@ -79,11 +70,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://muhammadazeem.com",
-  },
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
   },
 }
 
@@ -108,7 +94,6 @@ export default function RootLayout({
               jobTitle: "AI Engineer",
               description,
               url: "https://muhammadazeem.com",
-              image: "https://muhammadazeem.com/images/profile.jpg",
               sameAs: [
                 "https://github.com/AzeemChaudhry",
                 "https://www.linkedin.com/in/chaudhryazeem/",
@@ -135,9 +120,7 @@ export default function RootLayout({
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       </head>
       <body className={sans.className}>
-        <Providers>
-          {children}
-        </Providers>
+        {children}
       </body>
     </html>
   )
